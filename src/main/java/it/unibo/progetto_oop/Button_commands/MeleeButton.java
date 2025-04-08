@@ -3,7 +3,7 @@ package it.unibo.progetto_oop.Button_commands;
 import java.util.LinkedList;
 import java.util.List;
 
-import progetto_oop.combattimento.Position;
+import it.unibo.progetto_oop.combattimento.Position;
 
 public class MeleeButton implements GameButton{
     private List<Position> giocatori = new LinkedList<>();
