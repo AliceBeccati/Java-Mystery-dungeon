@@ -36,7 +36,7 @@ public class CombatModel {
         this.enemyName = enemyName;
 
         // Initialize health
-        this.playerHealth = 100;
+        this.playerHealth = 10;
         this.enemyHealth = 24;
 
         // Initialize positions

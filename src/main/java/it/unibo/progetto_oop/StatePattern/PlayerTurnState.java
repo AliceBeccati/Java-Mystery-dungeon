@@ -1,5 +1,6 @@
 package it.unibo.progetto_oop.StatePattern; // Or your appropriate package
 
+import it.unibo.progetto_oop.PotionStrategy.Potion;
 import it.unibo.progetto_oop.google.CombatController;
 
 public class PlayerTurnState implements CombatState { // Must implement the interface
@@ -10,7 +11,7 @@ public class PlayerTurnState implements CombatState { // Must implement the inte
         System.out.println("Entering Player Turn State"); // For debugging
         context.getView().showOriginalButtons();       // Show Attack/Bag/Run/Info
         context.getView().setButtonsEnabled(true);      // Allow player input
-        
+        context.redrawView();
     }
 
     @Override
@@ -50,9 +51,7 @@ public class PlayerTurnState implements CombatState { // Must implement the inte
 
     @Override
     public void handleBagInput(CombatController context) {
-        System.out.println("PlayerTurnState: Bag action requested (Not Implemented).");
-        context.getView().showInfo("Bag not implemented yet!");
-        // Does NOT change state unless opening the bag leads to a blocking state/animation
+        context.setStates(new ItemSelectionState());
     }
 
     @Override
@@ -84,4 +83,11 @@ public class PlayerTurnState implements CombatState { // Must implement the inte
         // If you had a turn timer, you'd handle it here. Otherwise, ignore.
         System.out.println("PlayerTurnState: Timer expired (no action configured).");
     }
+
+    @Override
+    public void handlePotionUsed(CombatController context, Potion selectedPotion) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handlePotionUsed'");
+    }
+    
 }

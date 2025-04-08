@@ -1,5 +1,6 @@
 package it.unibo.progetto_oop.StatePattern;
 
+import it.unibo.progetto_oop.PotionStrategy.Potion;
 import it.unibo.progetto_oop.google.CombatController;
 
 public interface CombatState {
@@ -23,4 +24,7 @@ public interface CombatState {
     void handleAnimationComplete(CombatController context);
 
     void handleTimerExpired(CombatController context);
+
+    void handlePotionUsed(CombatController context, Potion selectedPotion);
+
 }

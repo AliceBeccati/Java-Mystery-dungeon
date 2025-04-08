@@ -1,5 +1,6 @@
 package it.unibo.progetto_oop.StatePattern;
 
+import it.unibo.progetto_oop.PotionStrategy.Potion;
 import it.unibo.progetto_oop.google.CombatController;
 
 public class GameOverState implements CombatState{
@@ -37,4 +38,10 @@ public class GameOverState implements CombatState{
 
     @Override
     public void handleTimerExpired(CombatController context) {}
+
+    @Override
+    public void handlePotionUsed(CombatController context, Potion selectedPotion) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handlePotionUsed'");
+    }
 }

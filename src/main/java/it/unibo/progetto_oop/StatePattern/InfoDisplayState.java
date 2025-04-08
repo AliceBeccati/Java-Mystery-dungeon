@@ -2,6 +2,7 @@ package it.unibo.progetto_oop.StatePattern;
 
 import java.awt.Component;
 
+import it.unibo.progetto_oop.PotionStrategy.Potion;
 import it.unibo.progetto_oop.google.CombatController;
 
 public class InfoDisplayState implements CombatState{
@@ -73,6 +74,12 @@ public class InfoDisplayState implements CombatState{
     public void handleTimerExpired(CombatController context) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleTimerExpired'");
+    }
+
+    @Override
+    public void handlePotionUsed(CombatController context, Potion selectedPotion) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handlePotionUsed'");
     }
     
 }

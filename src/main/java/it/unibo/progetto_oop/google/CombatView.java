@@ -2,6 +2,7 @@ package it.unibo.progetto_oop.google;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public class CombatView extends JFrame {
     private JLabel infoLabel;
     private JPanel buttonPanel;
     private JPanel originalButtonPanel;
+    private JPanel bagButtonPanel;
     private JPanel attackButtonPanel;
     private CardLayout cardLayout;
 
@@ -31,6 +33,9 @@ public class CombatView extends JFrame {
     private JButton longRangeButton;
     private JButton poisonButton;
     private JButton backButton;
+    private JButton attackBuff;
+    private JButton curePoison;
+    private JButton healing;
 
     // Temporary reference for redraw logic - ideally remove MeleeButton dependency from View
     private final MeleeButton redrawHelper = new MeleeButton();
@@ -110,8 +115,19 @@ public class CombatView extends JFrame {
         attackButtonPanel.add(poisonButton);
         attackButtonPanel.add(backButton);
 
+        //Bag Options Buttons
+        bagButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        this.attackBuff = createButton("Attack Buff", (50 * size) / 3, (20 * size) / 3);
+        this.curePoison = createButton("Cure poison", (50 * size) / 3, (20 * size) / 3);
+        this.healing = createButton("Heal", (50 * size) / 3, (20 * size) / 3);
+        bagButtonPanel.add(this.attackBuff);
+        bagButtonPanel.add(this.curePoison);
+        bagButtonPanel.add(this.healing);
+        bagButtonPanel.add(backButton);
+
         buttonPanel.add(originalButtonPanel, "originalButtons");
         buttonPanel.add(attackButtonPanel, "attackOptions");
+        buttonPanel.add(bagButtonPanel, "bagOptions");
 
         // Info Label
         infoLabel = new JLabel("Combat Started!", SwingConstants.CENTER); // Initial text
@@ -168,6 +184,7 @@ public class CombatView extends JFrame {
     }
 
     public void showAttackOptions() {
+        attackButtonPanel.add(backButton);
         cardLayout.show(buttonPanel, "attackOptions");
     }
 
@@ -175,7 +192,13 @@ public class CombatView extends JFrame {
         cardLayout.show(buttonPanel, "originalButtons");
     }
 
+    public void showBagButtons(){
+        bagButtonPanel.add(backButton);
+        cardLayout.show(buttonPanel, "bagOptions");
+    }
+
     public void setButtonsEnabled(boolean enabled) {
+        attackButtonPanel.add(backButton);
         setPanelEnabled(originalButtonPanel, enabled);
         setPanelEnabled(attackButtonPanel, enabled);
     }
@@ -274,6 +297,7 @@ public class CombatView extends JFrame {
     }
 
     public JPanel getAttackButtonPanel(){
+        attackButtonPanel.add(backButton);
         return this.originalButtonPanel;
     }
 
@@ -333,6 +357,30 @@ public class CombatView extends JFrame {
 
     public JButton getBackButton(){
         return this.backButton;
+    }
+
+    public void addAttackBuffButtonListener(ActionListener listener){
+        attackBuff.addActionListener(listener);
+    }
+
+    public JButton getAttackBuff(){
+        return this.attackBuff;
+    }
+
+    public void addCurePoisonButtonListener(ActionListener listener){
+        curePoison.addActionListener(listener);
+    }
+
+    public JButton getCurePoison(){
+        return this.curePoison;
+    }
+
+    public void addHealingButtonListener(ActionListener listener){
+        healing.addActionListener(listener);
+    }
+
+    public JButton getHealing(){
+        return this.healing;
     }
 
 }

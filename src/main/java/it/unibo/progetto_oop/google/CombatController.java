@@ -8,8 +8,13 @@ import it.unibo.progetto_oop.Button_commands.MeleeButton;
 import it.unibo.progetto_oop.StatePattern.AnimatingState;
 import it.unibo.progetto_oop.StatePattern.CombatState;
 import it.unibo.progetto_oop.StatePattern.InfoDisplayState;
+import it.unibo.progetto_oop.StatePattern.ItemSelectionState;
 import it.unibo.progetto_oop.StatePattern.PlayerTurnState;
 import it.unibo.progetto_oop.combattimento.Position;
+import it.unibo.progetto_oop.PotionStrategy.AttackBuff;
+import it.unibo.progetto_oop.PotionStrategy.CurePoison;
+import it.unibo.progetto_oop.PotionStrategy.Healing;
+import it.unibo.progetto_oop.PotionStrategy.Potion;
 
 public class CombatController {
 
@@ -18,6 +23,11 @@ public class CombatController {
     private final MeleeButton meleeCommand; // Command for physical movement/attack
     private final LongRangeButton longRangeCommand; // Command for long range attack
     private CombatState currentState;
+
+    private final Potion healthPotion;
+    private final Potion antidote;
+    private final Potion attackBoost;
+
 
     private Timer animationTimer; // Timer for animations
     // Constants for animation/timing
@@ -40,6 +50,10 @@ public class CombatController {
         attachListeners();
 
         this.currentState = new PlayerTurnState();
+
+        this.healthPotion = new Potion("Health Potion", "Resores Hleath", 3, new Healing(25));
+        this.antidote = new Potion("Antidote", "Cures from poison", 1, new CurePoison());
+        this.attackBoost = new Potion("Attack Boost", "Boosts Attack for rest of encounter", 1, new AttackBuff());
     }
 
     private void attachListeners() {
@@ -49,8 +63,11 @@ public class CombatController {
         view.addPoisonButtonListener(e -> handlePlayerLongRangeAttack(true)); // true = poison
         view.addBackButtonListener(e -> handleBackToMainMenu());
         view.addInfoButtonListener(e -> handleInfo());
-        view.addBagButtonListener(e -> System.out.println("Bag clicked - Not implemented")); // Placeholder
+        view.addBagButtonListener(e -> handleBagPressed());
         view.addRunButtonListener(e -> System.out.println("Run clicked - Not implemented"));   // Placeholder
+        view.addAttackBuffButtonListener(e -> handleAttackBuffPressed(this.attackBoost));
+        view.addCurePoisonButtonListener(e -> handleAttackBuffPressed(this.antidote));
+        view.addHealingButtonListener(e -> handleAttackBuffPressed(healthPotion));
     }
 
     public void startCombat() {
@@ -453,6 +470,18 @@ public class CombatController {
         if (onComplete != null){
             onComplete.run();
         }
+    }
+
+    public void handleBagPressed(){
+        this.setStates(new ItemSelectionState());
+        this.view.showBagButtons();
+        view.clearInfo();
+        // Stop any ongoing animations if necessary
+        stopAnimationTimer();
+    }
+
+    public void handleAttackBuffPressed(Potion potion){
+        this.currentState.handlePotionUsed(this, potion);
     }
 
     // GETTER METHODS

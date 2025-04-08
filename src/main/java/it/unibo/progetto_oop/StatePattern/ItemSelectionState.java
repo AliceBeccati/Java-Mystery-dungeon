@@ -3,25 +3,23 @@ package it.unibo.progetto_oop.StatePattern;
 import it.unibo.progetto_oop.PotionStrategy.Potion;
 import it.unibo.progetto_oop.google.CombatController;
 
-public class EnemyTurnState implements CombatState{
+public class ItemSelectionState implements CombatState{
 
     @Override
     public void enterState(CombatController context) {
-        
-        context.getView().setButtonsEnabled(false); // in caso non fosse successo con animatingState
-        context.startDelayedEnemyTurn();
+        System.out.println("\nEntrato sezione selezione\n");
     }
 
     @Override
     public void exitState(CombatController context) {
-        
+        System.out.println("\nESCO\n");
+
     }
 
     @Override
     public void handlePhysicalAttackInput(CombatController context) {
-        context.setStates(new AnimatingState());
-
-        context.performEnemyTurn();
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'handlePhysicalAttackInput'");
     }
 
     @Override
@@ -38,8 +36,7 @@ public class EnemyTurnState implements CombatState{
 
     @Override
     public void handleBackInput(CombatController context) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'handleBackInput'");
+        context.setStates(new PlayerTurnState());
     }
 
     @Override
@@ -68,7 +65,8 @@ public class EnemyTurnState implements CombatState{
 
     @Override
     public void handlePotionUsed(CombatController context, Potion selectedPotion) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'handlePotionUsed'");
+        selectedPotion.use(context.getModel());
+        context.setStates(new PlayerTurnState());
     }
+    
 }

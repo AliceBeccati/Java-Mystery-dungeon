@@ -4,7 +4,11 @@ import it.unibo.progetto_oop.google.CombatModel;
 
 public class Healing implements PotionEffectStrategy{
 
-    private final int healingAmount = 10;
+    private final int healingAmount;
+
+    public Healing(int healingAmount){
+        this.healingAmount = healingAmount;
+    }
 
     @Override
     public void apllyEffect(CombatModel user) {
