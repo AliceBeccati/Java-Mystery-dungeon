@@ -36,10 +36,18 @@ public class PlayerTurnState implements CombatState { // Must implement the inte
     }
 
     @Override
-    public void handleLongRangeAttackInput(CombatController context, boolean isPoison) {
-        System.out.println("PlayerTurnState: Long Range Attack requested (Poison: " + isPoison + ")");
-        context.applyPlayerLongRangeAttack(isPoison);
-        context.setStates(new AnimatingState()); // Or use context.setStates
+    public void handleLongRangeAttackInput(CombatController context, boolean applyPoisonIntent) {
+            
+        // *** CHECK STAMINA FIRST ***
+        if (context.getModel().getPlayerStamina() < context.getStaminaCost()) {
+            context.getView().showInfo("Not enough Stamina!");
+            return; // Stop processing, stay in PlayerTurnState
+        }
+    
+        // If enough stamina, proceed:
+        System.out.println("PlayerTurnState: Long Range Attack requested...");
+        context.setStates(new AnimatingState());
+        context.applyPlayerLongRangeAttack(applyPoisonIntent); // This will decrease stamina
     }
 
     @Override

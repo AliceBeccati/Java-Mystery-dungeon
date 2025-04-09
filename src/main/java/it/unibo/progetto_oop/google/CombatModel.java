@@ -15,6 +15,8 @@ public class CombatModel {
 
     private int playerHealth;
     private int enemyHealth;
+    private int playerStamina;
+    private final int maxStamina = 100; // Or your desired max
     private final int maxHealth = 100; // Assuming max health is 100
 
     private int playerPower;
@@ -34,6 +36,8 @@ public class CombatModel {
         this.enemyPower = enemyPower;
         this.enemySpeed = enemySpeed;
         this.enemyName = enemyName;
+
+        this.playerStamina = maxStamina;
 
         // Initialize health
         this.playerHealth = 100;
@@ -110,6 +114,13 @@ public class CombatModel {
         return this.deadPlayer;
     }
 
+    public int getPlayerStamina() { 
+        return playerStamina; 
+    }
+    
+    public int getMaxStamina() { 
+        return maxStamina; 
+    }
 
     // --- Setters / Mutators ---
     public void setPlayerPosition(Position playerPosition) {
@@ -168,5 +179,9 @@ public class CombatModel {
 
     public void increasePlayerPower(int power){
         this.playerPower += power;
+    }
+
+    public void decreasePlayerStamina(int amount) {
+        this.playerStamina = Math.max(0, this.playerStamina - amount); // Prevent going below 0
     }
 }

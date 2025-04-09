@@ -32,6 +32,7 @@ public class CombatController {
 
     private boolean poisonAnimation;
 
+    final int STAMINA_COST = 10;
 
     private Timer animationTimer; // Timer for animations
     // Constants for animation/timing
@@ -77,6 +78,7 @@ public class CombatController {
 
     public void startCombat() {
         view.display();
+        view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());
         // Any other initial setup
     }
 
@@ -163,17 +165,26 @@ public class CombatController {
     }
 
     public void handlePlayerLongRangeAttack(boolean applyPoison) {
-
+        
         this.currentState.handleLongRangeAttackInput(this, applyPoison);
     }
     
     public void applyPlayerLongRangeAttack(boolean applyPoison){
         
+        model.decreasePlayerStamina(STAMINA_COST); // Update Model
+
+        // Update View Stamina Bar immediately
+        view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());
+
+        // Start Animation...
         longRangeAttackAnimation(applyPoison, () -> {
-            model.setPlayerTurn(!model.isPlayerTurn());
-            this.currentState.handleAnimationComplete(this);
+            System.out.println(">>> LONG RANGE Animation onComplete CALLED!"); // DEBUG
+            if (currentState != null) {
+                currentState.handleAnimationComplete(this);
+            }
         }, model.isPlayerTurn());
-    }
+}
+
 
     // --- Enemy Turn Logic ---
 
@@ -227,7 +238,7 @@ public class CombatController {
     // --- Animation Logic ---
 
     private void stopAnimationTimer() {
-        System.out.println("\n\n\stoppato\n\n\n");
+        System.out.println("stoppato\n");
         if (animationTimer != null && animationTimer.isRunning()) {
             animationTimer.stop();
             animationTimer = null; // Release reference
@@ -356,7 +367,7 @@ public class CombatController {
                     nextAttackerPos = new Position(currentAttackerPos[0].x() + returnDirection, currentAttackerPos[0].y());
                      // Target stays put during return phase after initial step back
                     currentAttackerPos[0] = nextAttackerPos;
-                    System.out.println("\n\nTARGET POS => " + currentTargetPos[0]);
+                    System.out.println("TARGET POS => " + currentTargetPos[0]);
                 }
             }
 
@@ -374,7 +385,7 @@ public class CombatController {
         });
         animationTimer.setInitialDelay(150);
         animationTimer.start();
-        System.out.println("\n\n\niniziato\n\n\n");
+        System.out.println("iniziato\n");
     }
 
     private void longRangeAttackAnimation(boolean isPoison, Runnable onHit, boolean isPlayerAttacker) {
@@ -398,12 +409,11 @@ public class CombatController {
                 else{
                     this.model.decreasePlayerHealth(model.getEnemyPower());
                 }
-                System.out.println("reciever here => " + reciever);
                 model.setEnemyPoisoned((this.model.isEnemyPoisoned(reciever) || isPoison), reciever);
-                System.out.println("is it poisoned : " + model.isPlayerPoisoned());
                 this.view.updateEnemyHealth(model.getEnemyHealth());
                 // model.decreaseEnemyHealth(model.getPlayerPower());
                 redrawView(false, false, true, 1, 1, false, new Position(0, 0), 0); // Redraw without flame/poison visible
+                model.setPlayerTurn(!model.isPlayerTurn());
                 if (onHit != null) {
                    onHit.run(); // Execute the action upon hitting
                 }
@@ -542,8 +552,8 @@ public class CombatController {
         return this.poisonAnimation;
     }
 
-    public void setPoisonAnimation(boolean value){
-        this.poisonAnimation = value;
+    public int getStaminaCost(){
+        return this.STAMINA_COST;
     }
 
     // SETTER METHODS
@@ -552,6 +562,10 @@ public class CombatController {
         this.currentState.exitState(this);
         this.currentState = newState;
         this.currentState.enterState(this);
+    }
+
+    public void setPoisonAnimation(boolean value){
+        this.poisonAnimation = value;
     }
 
 }

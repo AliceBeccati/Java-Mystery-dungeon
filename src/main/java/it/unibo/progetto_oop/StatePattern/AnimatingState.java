@@ -58,7 +58,8 @@ public class AnimatingState implements CombatState{
 
     @Override
     public void handleAnimationComplete(CombatController context) {
-
+        
+        System.out.println("--- handleAnimationComplete Called ---"); // General entry log
         CombatModel model = context.getModel();
         CombatView view = context.getView();
 

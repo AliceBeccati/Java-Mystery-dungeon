@@ -17,6 +17,7 @@ public class CombatView extends JFrame {
     private final Map<JLabel, Position> cells = new HashMap<>();
     private JProgressBar playerHealthBar;
     private JProgressBar enemyHealthBar;
+    private JProgressBar playerStaminaBar;
     private JLabel infoLabel;
     private JPanel buttonPanel;
     private JPanel originalButtonPanel;
@@ -82,12 +83,24 @@ public class CombatView extends JFrame {
         enemyHealthBar.setForeground(Color.RED);
         enemyHealthBar.setPreferredSize(new Dimension(35 * size, 20));
 
+        playerStaminaBar = new JProgressBar(0, 100); // Set max from model later
+        playerStaminaBar.setValue(100);            // Set value from model later
+        playerStaminaBar.setStringPainted(true);
+        playerStaminaBar.setForeground(new Color(173, 216, 230)); // Light Blue
+        // Or: playerStaminaBar.setForeground(Color.CYAN); // Brighter Blue
+        playerStaminaBar.setPreferredSize(new Dimension(35 * size, 20)); // Match others
+
         healthPanel.add(new JLabel("Player Health:")); // Add labels
         healthPanel.add(playerHealthBar);
         healthPanel.add(Box.createVerticalStrut(5));
         healthPanel.add(new JLabel("Enemy Health:")); // Add labels
         healthPanel.add(enemyHealthBar);
         this.add(healthPanel, BorderLayout.NORTH);
+
+        // ... after adding enemyHealthBar ...
+        healthPanel.add(Box.createVerticalStrut(5)); // Optional gap
+        healthPanel.add(new JLabel("Player Stamina:")); // Add a label
+        healthPanel.add(playerStaminaBar);
 
         // --- Button and Info Panel ---
         cardLayout = new CardLayout();
@@ -292,6 +305,11 @@ public class CombatView extends JFrame {
         return new ImageIcon(image);
     }
 
+    public void updatePlayerStamina(int value, int max) {
+        playerStaminaBar.setMaximum(max); // Update max just in case
+        playerStaminaBar.setValue(value);
+        playerStaminaBar.setString("Stamina: " + value + "/" + max);
+    }
 
     // --- Add Action Listeners (forwarding to Controller) ---
     // Use ActionListener functional interface for brevity
