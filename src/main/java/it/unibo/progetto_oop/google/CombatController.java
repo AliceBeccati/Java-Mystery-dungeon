@@ -171,10 +171,11 @@ public class CombatController {
     
     public void applyPlayerLongRangeAttack(boolean applyPoison){
         
-        model.decreasePlayerStamina(STAMINA_COST); // Update Model
-
-        // Update View Stamina Bar immediately
-        view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());
+        if (model.isPlayerTurn()){
+            model.decreasePlayerStamina(STAMINA_COST); // Update Model
+            // Update View Stamina Bar immediately
+            view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());
+        }
 
         // Start Animation...
         longRangeAttackAnimation(applyPoison, () -> {
