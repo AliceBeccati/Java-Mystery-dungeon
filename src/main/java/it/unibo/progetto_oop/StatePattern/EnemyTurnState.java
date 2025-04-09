@@ -26,8 +26,8 @@ public class EnemyTurnState implements CombatState{
 
     @Override
     public void handleLongRangeAttackInput(CombatController context, boolean isPoison) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'handleLongRangeAttackInput'");
+        context.applyPlayerLongRangeAttack(isPoison);
+        context.setStates(new AnimatingState());
     }
 
     @Override

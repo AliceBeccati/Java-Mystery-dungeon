@@ -3,6 +3,8 @@ package it.unibo.progetto_oop.google;
 
 import javax.swing.Timer; // Use Swing Timer for UI updates
 import java.util.List;
+import java.util.Random;
+
 import it.unibo.progetto_oop.Button_commands.LongRangeButton;
 import it.unibo.progetto_oop.Button_commands.MeleeButton;
 import it.unibo.progetto_oop.StatePattern.AnimatingState;
@@ -28,6 +30,8 @@ public class CombatController {
     private final Potion antidote;
     private final Potion attackBoost;
 
+    private boolean poisonAnimation;
+
 
     private Timer animationTimer; // Timer for animations
     // Constants for animation/timing
@@ -44,6 +48,7 @@ public class CombatController {
         this.view.setHealthBarMax(model.getMaxHealth());
         this.view.updatePlayerHealth(model.getPlayerHealth());
         this.view.updateEnemyHealth(model.getEnemyHealth());
+        
         this.redrawView(); // Initial draw
 
         // Attach listeners from View to Controller methods
@@ -77,18 +82,37 @@ public class CombatController {
 
     public void redrawView() {
         view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), model.getFlamePosition(),
-            true, true, false, false, 1, 1, false, new Position(0, 0)); // Default redraw
+            true, true, false, false, false, new Position(0, 0), 0, 1, 1, false, new Position(0, 0)); // Default redraw
         view.updatePlayerHealth(model.getPlayerHealth());
         view.updateEnemyHealth(model.getEnemyHealth());
     }
 
-    private void redrawView(boolean drawFlame, boolean drawPoison, boolean drawPlayer, int playerRange, int enemyRange) {
+    public void redrawView(boolean drawFlame, boolean drawPoison, boolean drawPlayer, int playerRange, int enemyRange, boolean drawPoisonDamage, Position poisonedPlayer, int heightPois) {
         view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), model.getFlamePosition(),
-            drawPlayer, true, drawFlame, drawPoison, playerRange, enemyRange, false, new Position(0, 0));
+            drawPlayer, true, drawFlame, drawPoison, drawPoisonDamage, poisonedPlayer, heightPois, playerRange, enemyRange, false, new Position(0, 0));
         view.updatePlayerHealth(model.getPlayerHealth());
         view.updateEnemyHealth(model.getEnemyHealth());
     }
 
+    public void drawPoison(){
+        stopAnimationTimer();
+        final int conto[] = {4};
+        this.poisonAnimation = true;
+        animationTimer = new Timer(300, e -> {
+            if (conto[0] == 1){
+                conto[0] = 0;
+                stopAnimationTimer();
+                redrawView();
+                this.setPoisonAnimation(false);
+                this.currentState.handleAnimationComplete(this);
+            }
+            else{
+                redrawView(false, false, true, 1, 1, true, (model.isPlayerTurn() ? model.getPlayerPosition() : model.getEnemyPosition()), conto[0]);
+                conto[0]--;
+            }
+        });
+        animationTimer.start();
+    }
 
     // --- Action Handlers (called by View listeners) ---
 
@@ -146,12 +170,9 @@ public class CombatController {
     public void applyPlayerLongRangeAttack(boolean applyPoison){
         
         longRangeAttackAnimation(applyPoison, () -> {
-            System.out.println("IS PLAYER TURN => " + model.isPlayerTurn() + "\n\n\n\n\n\n\n\n\n\n");
             model.setPlayerTurn(!model.isPlayerTurn());
-            System.out.println("IS PLAYER TURN => " + model.isPlayerTurn() + "\n\n\n\n\n\n\n\n\n\n");
-            System.out.println("Player STATE => " + this.currentState.getClass().getName());
             this.currentState.handleAnimationComplete(this);
-        });
+        }, model.isPlayerTurn());
     }
 
     // --- Enemy Turn Logic ---
@@ -169,8 +190,18 @@ public class CombatController {
     }
 
     private void handleEnemyTurn() {
-    
-        this.currentState.handlePhysicalAttackInput(this);
+        Random rand = new Random();
+        int num = rand.nextInt(3);
+        System.out.println("Current State  => " + this.currentState);
+        if (num == 0){
+            this.currentState.handlePhysicalAttackInput(this);
+        }
+        else if (num == 1){
+            this.currentState.handleLongRangeAttackInput(this, true);
+        }
+        else {
+            this.currentState.handleLongRangeAttackInput(this, false);
+        }
     }
 
     public void performEnemyTurn(){
@@ -346,25 +377,33 @@ public class CombatController {
         System.out.println("\n\n\niniziato\n\n\n");
     }
 
-    private void longRangeAttackAnimation(boolean isPoison, Runnable onHit) {
+    private void longRangeAttackAnimation(boolean isPoison, Runnable onHit, boolean isPlayerAttacker) {
         stopAnimationTimer(); // Ensure no other animation is running
 
-        model.setFlamePosition(model.getPlayerPosition()); // Start flame at player
+        Position reciever = (isPlayerAttacker ? model.getEnemyPosition() : model.getPlayerPosition());
+        Position attacker = (isPlayerAttacker ? model.getPlayerPosition() : model.getEnemyPosition());
+        model.setFlamePosition(attacker); // Start flame at player
+        int direction = (isPlayerAttacker ? -1 : 1);
 
         animationTimer = new Timer(ANIMATION_DELAY, e -> {
             // Check if flame reached or passed the enemy
-            if (model.getFlamePosition().x() >= model.getEnemyPosition().x() -1) { // -1 to hit when adjacent
+            if (model.getFlamePosition().x() == reciever.x() + direction) { // -1 to hit when adjacent
                 stopAnimationTimer();
                 // Reset flame position visually (optional, could just hide it)
-                model.setFlamePosition(model.getPlayerPosition()); // Move flame back instantly
+                model.setFlamePosition(attacker); // Move flame back instantly
                 
-                this.model.decreaseEnemyHealth(model.getPlayerPower());
-                model.setEnemyPoisoned(this.model.isEnemyPoisoned() || isPoison);
-                System.out.println(this.model.isEnemyPoisoned());
-                System.out.println(isPoison);
-                // this.view.updateEnemyHealth(model.getEnemyHealth() - model.getPlayerPower());
+                if (attacker.equals(model.getPlayerPosition())){
+                    this.model.decreaseEnemyHealth(model.getPlayerPower());
+                }
+                else{
+                    this.model.decreasePlayerHealth(model.getEnemyPower());
+                }
+                System.out.println("reciever here => " + reciever);
+                model.setEnemyPoisoned((this.model.isEnemyPoisoned(reciever) || isPoison), reciever);
+                System.out.println("is it poisoned : " + model.isPlayerPoisoned());
+                this.view.updateEnemyHealth(model.getEnemyHealth());
                 // model.decreaseEnemyHealth(model.getPlayerPower());
-                redrawView(false, false, true, 1, 1); // Redraw without flame/poison visible
+                redrawView(false, false, true, 1, 1, false, new Position(0, 0), 0); // Redraw without flame/poison visible
                 if (onHit != null) {
                    onHit.run(); // Execute the action upon hitting
                 }
@@ -373,12 +412,12 @@ public class CombatController {
             }
 
             // Move flame forward
-            longRangeCommand.setAttributes(model.getFlamePosition());
+            longRangeCommand.setAttributes(model.getFlamePosition(), (isPlayerAttacker ? 1 : -1));
             Position nextFlamePos = longRangeCommand.execute().get(0);
             model.setFlamePosition(nextFlamePos);
 
             // Redraw showing the flame/poison projectile
-            redrawView( !isPoison, isPoison, true, 1, 1); // Draw flame OR poison
+            redrawView( !isPoison, isPoison, true, 1, 1, false, new Position(0, 0), 0); // Draw flame OR poison
 
         });
         animationTimer.start();
@@ -413,7 +452,7 @@ public class CombatController {
                 // --- Still Zooming In ---
                 model.setEnemyPosition(new Position(currentEnemyPos.x() - 1, currentEnemyPos.y()));
                 // Redraw with enemy moving (adjust redraw params if needed)
-                redrawView(false, false, false, 1, 1);
+                redrawView(false, false, false, 1, 1, false, new Position(0, 0), 0);
             }
         });
         // zoomerStep is not needed for this part anymore
@@ -432,7 +471,7 @@ public class CombatController {
                 }
             }
             else{
-                redrawView(false, false, false, 1, conto[0]);
+                redrawView(false, false, false, 1, conto[0], false, new Position(0, 0), 0);
                 conto[0]++;
             }
         });
@@ -466,7 +505,8 @@ public class CombatController {
     }
 
     public void performDeathAnimation(Position death, Runnable onComplete){
-        view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), death, true, true, false, false, 1, 2, true, death);
+        view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), death, 
+        true, true, false, false, false, new Position(0, 0), 0, 1, 2, true, death);
         if (onComplete != null){
             onComplete.run();
         }
@@ -492,6 +532,18 @@ public class CombatController {
 
     public CombatView getView(){
         return this.view;
+    }
+
+    public Timer getAnimationTimer(){
+        return animationTimer;
+    }
+
+    public boolean getPoisonAnimation(){
+        return this.poisonAnimation;
+    }
+
+    public void setPoisonAnimation(boolean value){
+        this.poisonAnimation = value;
     }
 
     // SETTER METHODS

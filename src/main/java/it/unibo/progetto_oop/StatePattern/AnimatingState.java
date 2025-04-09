@@ -8,6 +8,7 @@ import it.unibo.progetto_oop.google.CombatView;
 
 public class AnimatingState implements CombatState{
     Position centerOfDying;
+    boolean fatto = false;
 
     @Override
     public void enterState(CombatController context) {
@@ -28,8 +29,7 @@ public class AnimatingState implements CombatState{
 
     @Override
     public void handleLongRangeAttackInput(CombatController context, boolean isPoison) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'handleLongRangeAttackInput'");
+        return;
     }
 
     @Override
@@ -63,22 +63,48 @@ public class AnimatingState implements CombatState{
         CombatView view = context.getView();
 
         boolean isPlayerTurn = model.isPlayerTurn();
-        boolean isEnemyPoisoned = model.isEnemyPoisoned();
+        boolean isEnemyPoisoned = model.isEnemyPoisoned((isPlayerTurn ? model.getPlayerPosition() : model.getEnemyPosition()));
 
-        if (!isPlayerTurn){
-            if (isEnemyPoisoned && model.getEnemyHealth() > 0){
-                System.out.println("FUNZIONA \n\n\n\n\n\n\n\n\n\n\n");
-                System.out.println("Health => " + model.getEnemyHealth());
-                model.decreaseEnemyHealth(model.getPlayerPoisonPower());
-                System.out.println("Health => " + model.getEnemyHealth());
-                view.updateEnemyHealth(model.getEnemyHealth());
+        System.out.println("Is player turn => " + isPlayerTurn + "\n is enemy poisoned => " + isEnemyPoisoned);
+
+        if (isEnemyPoisoned && model.getEnemyHealth() > 0){
+            System.out.println("FUNZIONA\n");
+            System.out.println("Health => " + model.getEnemyHealth());
+            if (!isPlayerTurn){
+                if (context.getPoisonAnimation()){
+                    System.out.println("Timer Running");
+                    context.setPoisonAnimation(false);
+                }
+                else{
+                    if (!fatto){
+                        context.drawPoison();
+                        fatto = true;
+                    }
+                    else{
+                        model.decreaseEnemyHealth(model.getPlayerPoisonPower());
+                        fatto = false;
+                    }
+                }
             }
-        }
-
-        else {
-            /*
-             * Effetti fine turno nemico da fare più avanti
-            */
+            else{
+                if (context.getPoisonAnimation()){
+                    System.out.println("Timer Running");
+                    context.setPoisonAnimation(false);
+                }
+                else{
+                    if (!fatto){
+                        context.drawPoison();
+                        fatto = true;
+                    }
+                    else{
+                        model.decreasePlayerHealth(model.getPlayerPoisonPower());
+                        fatto = false;
+                    }
+                }
+            }
+            System.out.println("Health => " + model.getEnemyHealth());
+            view.updateEnemyHealth(model.getEnemyHealth());
+            view.updatePlayerHealth(model.getPlayerHealth());
         }
 
         if (context.checkGameOver()) {
@@ -103,9 +129,16 @@ public class AnimatingState implements CombatState{
             return; // Stop further processing (don't transition to next turn)
         }
         else{
-            context.setStates(isPlayerTurn ? new PlayerTurnState() : new EnemyTurnState());
+            if (context.getPoisonAnimation()){
+                System.out.println("Timer Running");
+            }
+            else{
+                context.setStates(isPlayerTurn ? new PlayerTurnState() : new EnemyTurnState());            
+            }
         }
 
+        view.updateEnemyHealth(model.getEnemyHealth());
+        view.updatePlayerHealth(model.getPlayerHealth());
     }
 
     @Override

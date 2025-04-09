@@ -226,7 +226,7 @@ public class CombatView extends JFrame {
     // --- Redraw Logic ---
     public void redrawGrid(Position player, Position enemy, Position flame,
     boolean drawPlayer, boolean drawEnemy,
-    boolean drawFlame, boolean drawPoison, int playerRange, int enemyRange,
+    boolean drawFlame, boolean drawPoison, boolean drawPoisDamage, Position poisonedPlayer, int heightPois, int playerRange, int enemyRange,
     boolean isGameOver, Position whoDied)
     {
     // Need MeleeButton only for neighbour check - this couples View to Command logic, which isn't ideal MVC.
@@ -248,7 +248,10 @@ public class CombatView extends JFrame {
             }
             else
             {
-                if ((drawFlame || drawPoison) && redrawHelper.neighbours(flame, cellPos, 0)) {
+                if (drawPoisDamage && cellPos.x() == poisonedPlayer.x() && cellPos.y() == heightPois){
+                    icon = getIconResource("/green.jpg");
+                }
+                else if ((drawFlame || drawPoison) && redrawHelper.neighbours(flame, cellPos, 0)) {
                     icon = drawFlame ? getIconResource("/yellow.jpg") : getIconResource("/green.jpg");
                 } else if (drawPlayer && redrawHelper.neighbours(player, cellPos, playerRange)) {
                     icon = getIconResource("/Screenshot 2025-03-25 164621.png");

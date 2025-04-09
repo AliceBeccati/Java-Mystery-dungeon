@@ -10,7 +10,7 @@ public class TestGUI {
         int gridSize = 13; // Example size
         int playerPower = 10;
         int playerPoisonPower = 2;
-        int enemyPower = 8; // Example enemy stats
+        int enemyPower = 10; // Example enemy stats
         int enemySpeed = 5;
         String enemyName = "Goblin";
 

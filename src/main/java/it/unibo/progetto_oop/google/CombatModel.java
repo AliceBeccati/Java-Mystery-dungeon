@@ -36,8 +36,8 @@ public class CombatModel {
         this.enemyName = enemyName;
 
         // Initialize health
-        this.playerHealth = 10;
-        this.enemyHealth = 24;
+        this.playerHealth = 100;
+        this.enemyHealth = 100;
 
         // Initialize positions
         resetPositions();
@@ -82,8 +82,16 @@ public class CombatModel {
     public int getPlayerPoisonPower() { 
         return playerPoisonPower; 
     }
-    public boolean isEnemyPoisoned() { 
-        return enemyPoisoned; 
+    public boolean isEnemyPoisoned(Position poisoned) { 
+        if (poisoned.equals(playerPosition )){
+            return this.playerPoisoned;
+        }
+        else if(poisoned.equals(enemyPosition)){
+            return this.enemyPoisoned;
+        }
+        else {
+            throw new IllegalArgumentException("Argument no Player nor Enemy");
+        }
     }
     public boolean isPlayerPoisoned(){
         return playerPoisoned;
@@ -133,8 +141,13 @@ public class CombatModel {
         this.enemyHealth = Math.min(maxHealth, this.enemyHealth + amount);
     }
 
-    public void setEnemyPoisoned(boolean enemyPoisoned) {
-        this.enemyPoisoned = enemyPoisoned;
+    public void setEnemyPoisoned(boolean enemyPoisoned, Position reciever) {
+        if (reciever.equals(this.enemyPosition)){
+            this.enemyPoisoned = enemyPoisoned;
+        }
+        else if (reciever.equals(this.playerPosition)){
+            this.playerPoisoned = enemyPoisoned;
+        }
     }
 
     public void setPlayerPoisoned(boolean playerPoisoned){
