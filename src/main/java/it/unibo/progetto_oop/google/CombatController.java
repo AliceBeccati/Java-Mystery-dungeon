@@ -22,8 +22,8 @@ public class CombatController {
 
     private final CombatModel model;
     private final CombatView view;
-    private final MeleeButton meleeCommand; // Command for physical movement/attack
-    private final LongRangeButton longRangeCommand; // Command for long range attack
+    private final MeleeButton meleeCommand;
+    private final LongRangeButton longRangeCommand;
     private CombatState currentState;
 
     private final Potion healthPotion;
@@ -34,10 +34,10 @@ public class CombatController {
 
     final int STAMINA_COST = 10;
 
-    private Timer animationTimer; // Timer for animations
-    // Constants for animation/timing
-    private static final int ANIMATION_DELAY = 100; // ms
-    private static final int INFO_ZOOM_DELAY = 200; // ms for zoomer animation
+    private Timer animationTimer; 
+    
+    private static final int ANIMATION_DELAY = 100; // millisecondi
+    private static final int INFO_ZOOM_DELAY = 200; // millisecondi
     
     public CombatController(CombatModel model, CombatView view) {
         this.model = model;
@@ -45,50 +45,76 @@ public class CombatController {
         this.meleeCommand = new MeleeButton();
         this.longRangeCommand = new LongRangeButton();
 
-        // Initialize View based on Model
+        // creazione di Barra di vita nella view con informazioni prese da model
         this.view.setHealthBarMax(model.getMaxHealth());
         this.view.updatePlayerHealth(model.getPlayerHealth());
         this.view.updateEnemyHealth(model.getEnemyHealth());
         
-        this.redrawView(); // Initial draw
+        // prima redraw
+        this.redrawView();
 
-        // Attach listeners from View to Controller methods
+        // applico ActionListener a tutti i bottoni
         attachListeners();
 
+        // primo Stato del gioco
         this.currentState = new PlayerTurnState();
 
+        // creazione delle Pozioni usate dopo
         this.healthPotion = new Potion("Health Potion", "Resores Hleath", 3, new Healing(25));
         this.antidote = new Potion("Antidote", "Cures from poison", 1, new CurePoison());
         this.attackBoost = new Potion("Attack Boost", "Boosts Attack for rest of encounter", 1, new AttackBuff());
     }
 
+
+    /**
+     * Applicazione di ActionListener a tutti i bottoni
+     */
     private void attachListeners() {
-        view.addAttackButtonListener(e -> handleAttackMenu());
-        view.addPhysicalAttackButtonListener(e -> handlePlayerPhysicalAttack());
-        view.addLongRangeButtonListener(e -> handlePlayerLongRangeAttack(false)); // false = not poison
-        view.addPoisonButtonListener(e -> handlePlayerLongRangeAttack(true)); // true = poison
-        view.addBackButtonListener(e -> handleBackToMainMenu());
-        view.addInfoButtonListener(e -> handleInfo());
-        view.addBagButtonListener(e -> handleBagPressed());
-        view.addRunButtonListener(e -> System.out.println("Run clicked - Not implemented"));   // Placeholder
-        view.addAttackBuffButtonListener(e -> handleAttackBuffPressed(this.attackBoost));
-        view.addCurePoisonButtonListener(e -> handleAttackBuffPressed(this.antidote));
-        view.addHealingButtonListener(e -> handleAttackBuffPressed(healthPotion));
+        view.addAttackButtonListener(e -> handleAttackMenu());                                  // ActionListener per bottone "Attack"
+        view.addPhysicalAttackButtonListener(e -> handlePlayerPhysicalAttack());                // ActionListener per attacco fisico
+        view.addLongRangeButtonListener(e -> handlePlayerLongRangeAttack(false));   // false = no veleno
+        view.addPoisonButtonListener(e -> handlePlayerLongRangeAttack(true));       // true = sì veleno
+        view.addBackButtonListener(e -> handleBackToMainMenu());                                // ActionListener per bottone Indietro
+        view.addInfoButtonListener(e -> handleInfo());                                          // ActionListener per bottone Info
+        view.addBagButtonListener(e -> handleBagPressed());                                     // bottone borsa
+        view.addRunButtonListener(e -> System.out.println("Run clicked - Not implemented"));  // Placeholder 
+        view.addAttackBuffButtonListener(e -> handleAttackBuffPressed(this.attackBoost));       // bottone Attack Buff (cambai il argomento che sono tutte istanze di pozioni)
+        view.addCurePoisonButtonListener(e -> handleAttackBuffPressed(this.antidote));          // bottone antidoto
+        view.addHealingButtonListener(e -> handleAttackBuffPressed(healthPotion));              // bottone più vita
     }
 
+    /**
+     * Iniziare tutto
+     */
     public void startCombat() {
         view.display();
         view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());
-        // Any other initial setup
     }
 
+    /**
+     * Versione base di disegno solo giocatore e nemico
+     */
     public void redrawView() {
         view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), model.getFlamePosition(),
-            true, true, false, false, false, new Position(0, 0), 0, 1, 1, false, new Position(0, 0)); // Default redraw
+            true, true, false, false, false, new Position(0, 0), 0, 1, 1, false, new Position(0, 0));
         view.updatePlayerHealth(model.getPlayerHealth());
         view.updateEnemyHealth(model.getEnemyHealth());
     }
-
+    /**
+     * 
+     * @param drawFlame         Fiamma (attacco lungo raggio)
+     * @param drawPoison        Veleno
+     * @param drawPlayer        Giocatore
+     * @param playerRange       grandezza giocatore
+     * @param enemyRange        grandezza nemico
+     * @param drawPoisonDamage  Animazione che fa vedere se giocatore o nemico sono avvelenati
+     * @param poisonedPlayer    posizione del personaggio avvelenato
+     * @param heightPois        posizione (int) del animazione del veleno
+     * 
+     * mettere true o false a seconda di quale impostazione si vuole
+     * Aggiorna anche vita presa informazione da model
+     * 
+     */
     public void redrawView(boolean drawFlame, boolean drawPoison, boolean drawPlayer, int playerRange, int enemyRange, boolean drawPoisonDamage, Position poisonedPlayer, int heightPois) {
         view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), model.getFlamePosition(),
             drawPlayer, true, drawFlame, drawPoison, drawPoisonDamage, poisonedPlayer, heightPois, playerRange, enemyRange, false, new Position(0, 0));
@@ -96,103 +122,120 @@ public class CombatController {
         view.updateEnemyHealth(model.getEnemyHealth());
     }
 
+    /**
+     * animazione che fa vedere se giocatore/nemico è avvelenato
+     */
     public void drawPoison(){
         stopAnimationTimer();
-        final int conto[] = {4};
+        final int conto[] = {4};                                     // array perché così posso dichiararlo final usarlo nel Timer se no sarebbe stato più scomodo
         this.poisonAnimation = true;
-        animationTimer = new Timer(300, e -> {
-            if (conto[0] == 1){
+        animationTimer = new Timer(300, e -> {               // Timer con delay di 300 ms perché così potevo vedere da tablet che laggava ahahahahaha
+            if (conto[0] == 1){                                     // fine del timer resetto tutto
                 conto[0] = 0;
                 stopAnimationTimer();
                 redrawView();
                 this.setPoisonAnimation(false);
-                this.currentState.handleAnimationComplete(this);
+                this.currentState.handleAnimationComplete(this);    // chiamo la funzione che tratta la fine delle animazioni 
             }
-            else{
+            else{                                                   // ridisegno tutto con il veleno che sale 
                 redrawView(false, false, true, 1, 1, true, (model.isPlayerTurn() ? model.getPlayerPosition() : model.getEnemyPosition()), conto[0]);
-                conto[0]--;
+                conto[0]--;                                         // faccio salire il veleno
             }
         });
-        animationTimer.start();
+        animationTimer.start();                                     // faccio partire il timer (finisce tutte le prossime chiamate poi fa partire il timer non è coe un for (lo so è strano))
     }
 
-    // --- Action Handlers (called by View listeners) ---
+    // --- Handler per ActionListener ---
 
+    /**
+     * Opzioni di attacco
+     */
     private void handleAttackMenu() {
         if (!model.isPlayerTurn()) {
-            return; // Only allow actions on player's turn
+            return;                                                 // vogliamo che funzioni solo quando è il turno del giocatore
         }
         view.showAttackOptions();
         view.clearInfo();
     }
 
+    /**
+     * Opzioni di menu principale
+     */
     private void handleBackToMainMenu() {
         this.currentState.handleBackInput(this);
         view.showOriginalButtons();
         view.clearInfo();
-        // Stop any ongoing animations if necessary
-        stopAnimationTimer();
+        stopAnimationTimer();                                       // fermare qualunque animazione in caso stia ancora andando
     }
 
+    /**
+     * Maneggiare info
+     */
     private void handleInfo() {
         
-        this.currentState.handleInfoInput(this);
+        this.currentState.handleInfoInput(this);                    // Chiamo info attraverso la State che fa partire l'animazione di info
     }
 
+    /**
+     * Maneggiare attacco fisico
+     */
     public void handlePlayerPhysicalAttack() {
 
-        currentState.handlePhysicalAttackInput(this);
+        currentState.handlePhysicalAttackInput(this);               // Chiamo attacco fisico attravero State
     }
 
+    /**
+     * Fa attacco fisico
+     */
     public void performPlayerPhysicalAttack(){
-        // Define what happens after the player's attack animation completes
-        Runnable onPlayerAttackComplete = () -> {
+        Runnable onPlayerAttackComplete = () -> {                   // Cosa succede una volta finita l'animaizone
             
             this.currentState.handleAnimationComplete(this);
-            
-            // If enemy survived, start enemy turn after a delay
-            startDelayedEnemyTurn();
+            startDelayedEnemyTurn();                                // se sopravvive il nemico tocca a lui
 
         };
 
         animatePhysicalMove(
-                model.getPlayerPosition(),
-                model.getEnemyPosition(),
-                true, // isPlayerAttacker
-                model.getPlayerPower(),
-                onPlayerAttackComplete
+            model.getPlayerPosition(),
+            model.getEnemyPosition(),
+            true,
+            model.getPlayerPower(),
+            onPlayerAttackComplete
         );
     }
-
+    /**
+     * Maneggiare attacco lungo raggio
+    */
     public void handlePlayerLongRangeAttack(boolean applyPoison) {
         
-        this.currentState.handleLongRangeAttackInput(this, applyPoison);
+        this.currentState.handleLongRangeAttackInput(this, applyPoison);                // dai hai capito cosa succede ahahahahaha
     }
     
+    /**
+     * fa attacco fisico
+    */
     public void applyPlayerLongRangeAttack(boolean applyPoison){
         
         if (model.isPlayerTurn()){
-            model.decreasePlayerStamina(STAMINA_COST); // Update Model
-            // Update View Stamina Bar immediately
-            view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());
+            model.decreasePlayerStamina(STAMINA_COST);                                  // Aggiorna il model
+            view.updatePlayerStamina(model.getPlayerStamina(), model.getMaxStamina());  // Aggiorna la vita
         }
 
-        // Start Animation...
-        longRangeAttackAnimation(applyPoison, () -> {
-            System.out.println(">>> LONG RANGE Animation onComplete CALLED!"); // DEBUG
-            if (currentState != null) {
+        longRangeAttackAnimation(applyPoison, () -> {                                   // Inizia l'animazione
+            if (currentState != null) {                                                 // runnable una volta finito il turno AnimationState capisce cosa fare
                 currentState.handleAnimationComplete(this);
             }
         }, model.isPlayerTurn());
 }
 
 
-    // --- Enemy Turn Logic ---
+    // --- Logica per il Nemico ---
+
+    /**
+     * Inizia il turno del nemico dopo 150 millisecondi così che non parte subito ed è più bello
+     */
 
     public void startDelayedEnemyTurn() {
-        
-        // Use a timer for the delay
-        
         Timer enemyTurnDelayTimer = new Timer(150, e -> {
             this.handleEnemyTurn();
         });
@@ -201,10 +244,12 @@ public class CombatController {
         enemyTurnDelayTimer.start();
     }
 
+    /**
+     * Sceglie a caso una mossa da fare
+     */
     private void handleEnemyTurn() {
         Random rand = new Random();
         int num = rand.nextInt(3);
-        System.out.println("Current State  => " + this.currentState);
         if (num == 0){
             this.currentState.handlePhysicalAttackInput(this);
         }
@@ -216,62 +261,76 @@ public class CombatController {
         }
     }
 
+    /**
+     * Animazione del turno del nemico
+     */
     public void performEnemyTurn(){
         view.showInfo("Enemy attacks!");
 
-        // Define what happens after the enemy's attack animation completes
+        // Runnable per cosa succede una volta finita l'animazione
         Runnable onEnemyAttackComplete = () -> {
 
             this.currentState.handleAnimationComplete(this);
         };
 
-         // Simple AI: Enemy always uses physical attack
         animatePhysicalMove(
             model.getEnemyPosition(),
             model.getPlayerPosition(),
-            false, // isPlayerAttacker = false
+            false,
             model.getEnemyPower(),
             onEnemyAttackComplete
         );
     }
 
 
-    // --- Animation Logic ---
+    // --- Logica Animazione ---
 
+    /**
+     * Fermare tutte l'animazione in caso stia ancora andando
+     * il Timer è sempre lo stesso così da poter usare questa funzione
+     */
     private void stopAnimationTimer() {
         System.out.println("stoppato\n");
         if (animationTimer != null && animationTimer.isRunning()) {
             animationTimer.stop();
-            animationTimer = null; // Release reference
+            animationTimer = null;
         }
     }
     
+    /**
+     * 
+     * @param attackerStartPos Poszione iniziale dell'attaccante
+     * @param targetStartPos Posizione inizlare del nemico
+     * @param isPlayerAttacker veros se attacca il giocatore false se attacca il nemico
+     * @param attackPower potenza attaco
+     * @param onComplete Funzione che descrive cosa succede una votla finita animazione
+     */
     private void animatePhysicalMove( final Position attackerStartPos, final Position targetStartPos, final boolean isPlayerAttacker, final int attackPower, final Runnable onComplete){
 
-        stopAnimationTimer(); // Ensure no other animation is running
+        stopAnimationTimer();
 
         final int moveDirection = isPlayerAttacker ? 1 : -1;
         final int returnDirection = -moveDirection;
-        final int meleeCheckDistance = 1; // Distance for neighbor check
+        final int meleeCheckDistance = 1; // distanza per quando viene considerato vicino
 
-        // Use arrays to hold mutable positions within the lambda
+        // Uso array così le posso definire final e usare nel Timer
         final Position[] currentAttackerPos = { new Position(attackerStartPos.x(), attackerStartPos.y()) };
         final Position[] currentTargetPos = { new Position(targetStartPos.x(), targetStartPos.y()) };
 
-        // State machine for animation steps
-        final int[] state = {0}; // 0: Moving forward, 1: Attack & Start Return, 2: Returning
+        // "Stati" in cui ci troviamo all'interno dell'animazione
+        final int[] state = {0}; // 0: andare avanti, 1: Attacco e inizia a tornare indietro, 2: si va indietro
         final boolean[] damageApplied = {false};
 
-        // Initial placement before animation starts
+        // Chi è chi
         if (isPlayerAttacker) {
             model.setPlayerPosition(currentAttackerPos[0]);
             model.setEnemyPosition(currentTargetPos[0]);
         } else {
-            model.setPlayerPosition(currentTargetPos[0]); // Target is player
-            model.setEnemyPosition(currentAttackerPos[0]); // Attacker is enemy
+            model.setPlayerPosition(currentTargetPos[0]);
+            model.setEnemyPosition(currentAttackerPos[0]);
         }
-       // redrawView(); // No immediate redraw needed, timer will handle steps
 
+        // creo il timer
         animationTimer = new Timer(ANIMATION_DELAY, null);
         
         animationTimer.addActionListener(event -> {
@@ -280,36 +339,35 @@ public class CombatController {
             Position nextTargetPos = currentTargetPos[0];
 
             if (!(currentState instanceof AnimatingState)) {
-                // State changed unexpectedly, stop animation
-                stopAnimationTimer(); // Make sure this method exists and stops/nulls timer
+                // In caso ci sia un porblema
+                stopAnimationTimer();
                 System.out.println("Animation timer stopped: State is no longer AnimatingState.");
                 return;
             }
 
-            // --- State Logic ---
-            if (state[0] == 0) { // Moving forward
+            // --- Logica degli Stati ---
+            if (state[0] == 0) {  // si va avanti
                 meleeCommand.setAttributes(currentAttackerPos[0], currentTargetPos[0], moveDirection, meleeCheckDistance);
-                System.out.println("Attacker => " + currentAttackerPos[0] + "Target => " + currentTargetPos[0]);
-                List<Position> result = meleeCommand.execute(); // Get next positions
+                List<Position> result = meleeCommand.execute(); // Prossima posizione
                 nextAttackerPos = result.get(0);
-                nextTargetPos = result.get(1); // Target might be pushed back
+                nextTargetPos = result.get(1); // In caso il difensore è stato spostato
                 
-                // Check if contact made or target moved
+                // Controllare se è stato fatto contato o se il difensore si è spostato
                 
                 if (meleeCommand.neighbours(nextAttackerPos, nextTargetPos, meleeCheckDistance) || !nextTargetPos.equals(currentTargetPos[0])) {
-                    state[0] = 1; // Contact or push occurred, move to attack state
+                    state[0] = 1; // contato o si è spostato si cambia "stato"
                 } 
                 
                 else if (!nextAttackerPos.equals(currentAttackerPos[0])) {
-                    // Attacker moved forward, continue state 0
+                    // L'attaccante si è spostato si continua con lo stato 0
                 } 
                 
                 else {
-                    // No movement, assume contact if close enough (failsafe)
-                    if (meleeCommand.neighbours(nextAttackerPos, nextTargetPos, meleeCheckDistance + 1)) { // Check slightly wider range
+                    // nessun movimento, si da per scontato che sia contato se abbastanza vicino (failsafe)
+                    if (meleeCommand.neighbours(nextAttackerPos, nextTargetPos, meleeCheckDistance + 1)) {
                        state[0] = 1;
                     } else {
-                        // Stuck? Force state change or stop? For now, assume contact.
+                        // In caso sia bloccato
                         System.err.println("Animation stuck in state 0? Forcing state 1.");
                         state[0] = 1;
                     }
@@ -317,7 +375,7 @@ public class CombatController {
                 currentAttackerPos[0] = nextAttackerPos;
                 currentTargetPos[0] = nextTargetPos;
 
-            } else if (state[0] == 1) { // Apply damage and start returning
+            } else if (state[0] == 1) { // Danno e inizia a tornare indietro
                 if (!damageApplied[0]) {
                     if (isPlayerAttacker) {
                         model.decreaseEnemyHealth(attackPower);
@@ -328,60 +386,55 @@ public class CombatController {
                         view.updatePlayerHealth(model.getPlayerHealth());
                     }
                     damageApplied[0] = true;
-                    // Check for game over immediately after damage
                 }
-                // Move both attacker and target back one step to initiate return
+                // Sposto entrambi per poi iniziare a tornare indietro
                 nextAttackerPos = new Position(currentAttackerPos[0].x() + returnDirection, currentAttackerPos[0].y());
                 nextTargetPos = new Position(currentTargetPos[0].x() + returnDirection, currentTargetPos[0].y()); // Target also moves back
                 currentAttackerPos[0] = nextAttackerPos;
                 currentTargetPos[0] = nextTargetPos;
-                state[0] = 2; // Move to returning state
+                state[0] = 2; // Cambio "stato" per tornare indietro
 
-            } else { // State 2: Returning to start
-                if (currentAttackerPos[0].x() == attackerStartPos.x()) { // Attacker reached start X
+            } else { // Si torna alla posizione iniziale
+                if (currentAttackerPos[0].x() == attackerStartPos.x()) { // Attaccante ha raggiunto l'inizio
                     stopAnimationTimer();
 
-                    // Ensure final positions are exactly the start/end positions
+                    // In caso non sia preciso lo metto alla posizione iniziale
                     currentAttackerPos[0] = attackerStartPos;
-                    // Target position might have changed if pushed back
-                    // currentTargetPos[0] remains as it was after the push back step
-
-                     // Update model with final positions AFTER animation
+                    
                     if (isPlayerAttacker) {
                         model.setPlayerPosition(currentAttackerPos[0]);
                         model.setEnemyPosition(currentTargetPos[0]);
                         this.getModel().setPlayerTurn(!isPlayerAttacker);    
                     } else {
-                        model.setPlayerPosition(currentTargetPos[0]); // Player is target
-                        model.setEnemyPosition(currentAttackerPos[0]); // Enemy is attacker
+                        model.setPlayerPosition(currentTargetPos[0]); 
+                        model.setEnemyPosition(currentAttackerPos[0]);
                         this.getModel().setPlayerTurn(!isPlayerAttacker);
                     }
-                    redrawView(); // Final redraw at resting positions
+                    redrawView();
 
-                    // Execute the completion action (e.g., start enemy turn)
+                    // Fine animazione chiamo AnimatingState
                     if (onComplete != null) {
                         onComplete.run();
                     }
-                    return; // Exit timer listener
+                    return; // Fine timer
 
-                } else { // Continue moving back
+                } else { // Continua ad andare indietro
                     nextAttackerPos = new Position(currentAttackerPos[0].x() + returnDirection, currentAttackerPos[0].y());
-                     // Target stays put during return phase after initial step back
+                    // difensore non si muove quando attaccante si muove
                     currentAttackerPos[0] = nextAttackerPos;
                     System.out.println("TARGET POS => " + currentTargetPos[0]);
                 }
             }
 
-            // --- Update Model & View during animation step ---
+            // --- Aggiornamento di view e model ---
             if (isPlayerAttacker) {
                 model.setPlayerPosition(currentAttackerPos[0]);
                 model.setEnemyPosition(currentTargetPos[0]);
             } else {
-                model.setPlayerPosition(currentTargetPos[0]); // Player is target
-                model.setEnemyPosition(currentAttackerPos[0]); // Enemy is attacker
+                model.setPlayerPosition(currentTargetPos[0]); 
+                model.setEnemyPosition(currentAttackerPos[0]); 
             }
-            // Redraw based on current animation positions
-            redrawView(); // Use standard redraw
+            redrawView(); // redraw base perché non c'è niente di strano
 
         });
         animationTimer.setInitialDelay(150);
@@ -389,20 +442,26 @@ public class CombatController {
         System.out.println("iniziato\n");
     }
 
+    /**
+     * 
+     * @param isPoison vero o falso se è attacco con veleno o meno
+     * @param onHit Runnable per cosa succede dopo aver finito animazione
+     * @param isPlayerAttacker vero o falso se giocatore è attaccante
+     */
     private void longRangeAttackAnimation(boolean isPoison, Runnable onHit, boolean isPlayerAttacker) {
-        stopAnimationTimer(); // Ensure no other animation is running
+        stopAnimationTimer();
 
         Position reciever = (isPlayerAttacker ? model.getEnemyPosition() : model.getPlayerPosition());
         Position attacker = (isPlayerAttacker ? model.getPlayerPosition() : model.getEnemyPosition());
-        model.setFlamePosition(attacker); // Start flame at player
+        model.setFlamePosition(attacker); // Poszione iniziale della fiamma (attaccante)
         int direction = (isPlayerAttacker ? -1 : 1);
 
         animationTimer = new Timer(ANIMATION_DELAY, e -> {
-            // Check if flame reached or passed the enemy
-            if (model.getFlamePosition().x() == reciever.x() + direction) { // -1 to hit when adjacent
+            // Controllo se fiamma è alla posizione del difensore
+            if (model.getFlamePosition().x() == reciever.x() + direction) { // se è adiacente
                 stopAnimationTimer();
-                // Reset flame position visually (optional, could just hide it)
-                model.setFlamePosition(attacker); // Move flame back instantly
+                // Rimetto la fiamma alla posizione dell'attaccante
+                model.setFlamePosition(attacker);  //la fiamma viene disegnata sotto l'attaccante se per sbaglio disegnata assieme agli altri
                 
                 if (attacker.equals(model.getPlayerPosition())){
                     this.model.decreaseEnemyHealth(model.getPlayerPower());
@@ -412,64 +471,70 @@ public class CombatController {
                 }
                 model.setEnemyPoisoned((this.model.isEnemyPoisoned(reciever) || isPoison), reciever);
                 this.view.updateEnemyHealth(model.getEnemyHealth());
-                // model.decreaseEnemyHealth(model.getPlayerPower());
-                redrawView(false, false, true, 1, 1, false, new Position(0, 0), 0); // Redraw without flame/poison visible
+
+                redrawView(false, false, true, 1, 1, false, new Position(0, 0), 0); // Redraw senza fiamma/veleno 
                 model.setPlayerTurn(!model.isPlayerTurn());
                 if (onHit != null) {
-                   onHit.run(); // Execute the action upon hitting
+                   onHit.run();
                 }
                 
                 return;
             }
 
-            // Move flame forward
+            // sposta fiamma
             longRangeCommand.setAttributes(model.getFlamePosition(), (isPlayerAttacker ? 1 : -1));
             Position nextFlamePos = longRangeCommand.execute().get(0);
             model.setFlamePosition(nextFlamePos);
 
-            // Redraw showing the flame/poison projectile
-            redrawView( !isPoison, isPoison, true, 1, 1, false, new Position(0, 0), 0); // Draw flame OR poison
+            // Redraw con fiamma/veleno
+            redrawView( !isPoison, isPoison, true, 1, 1, false, new Position(0, 0), 0);
 
         });
         animationTimer.start();
     }
 
 
-    // Refactored Zoomer - takes a callback for when ZOOM-IN finishes
-    public void performInfoZoomInAnimation(Runnable onZoomComplete) { // Renamed for clarity
+    /**
+     * 
+     * @param onZoomComplete Runnable ormai sai cosa fa
+     * 
+     * porta nemico al centro e dopo lo ingrandisce
+     */
+    public void performInfoZoomInAnimation(Runnable onZoomComplete) {
         System.out.println("Performing Info Zoom-In Animation...");
-        stopAnimationTimer(); // Stop any other animations
-        view.setButtonsEnabled(false); // Disable buttons during animation
+        stopAnimationTimer();
+        view.setButtonsEnabled(false); // disabilita tutti i bottoni
 
         final int targetX = model.getSize() / 2;
 
         animationTimer = new Timer(INFO_ZOOM_DELAY, e -> {
-            Position currentEnemyPos = model.getEnemyPosition(); // Get current pos
+            Position currentEnemyPos = model.getEnemyPosition();
 
             if (currentEnemyPos.x() <= targetX) {
-                // --- Zoom-in Complete ---
+                // --- Zoom completato ---
                 stopAnimationTimer();
-                // Ensure exact position at center
+                // Assicurazione che sia al centro
                 model.setEnemyPosition(new Position(targetX, currentEnemyPos.y()));
-                // Redraw centered enemy (adjust redraw parameters as needed for zoomed view)
 
-                this.getModel().setEnemyPosition(new Position(targetX, currentEnemyPos.y()));
+                this.model.setEnemyPosition(new Position(targetX, currentEnemyPos.y()));
                 
                 this.makeBigger(5, onZoomComplete);
 
-                // *** CRUCIAL: Execute the completion callback ***
-                // DO NOT automatically start infoNextDrawAnimation here anymore
             } else {
-                // --- Still Zooming In ---
+                // --- non ancora al centro ---
                 model.setEnemyPosition(new Position(currentEnemyPos.x() - 1, currentEnemyPos.y()));
-                // Redraw with enemy moving (adjust redraw params if needed)
                 redrawView(false, false, false, 1, 1, false, new Position(0, 0), 0);
             }
         });
-        // zoomerStep is not needed for this part anymore
         animationTimer.start();
     }
 
+
+    /**
+     * 
+     * @param size grandezza necessaria
+     * @param onZoomComplete Runnable per fine animazione
+     */
     private void makeBigger(int size, Runnable onZoomComplete){
         final int conto[] = {1};
         animationTimer = new Timer(INFO_ZOOM_DELAY, e -> {
@@ -478,7 +543,7 @@ public class CombatController {
                 conto[0] = 0;
                 if (onZoomComplete != null) {
                     System.out.println("Zoom-in complete, executing callback.");
-                    onZoomComplete.run(); // This will trigger setState(InfoDisplayState)
+                    onZoomComplete.run(); // farà partire nuovo State
                 }
             }
             else{
@@ -490,24 +555,25 @@ public class CombatController {
     }
 
 
-    // This method is CALLED BY PlayerTurnState
+    // Chiamato da PlayerTurnState
     public void performInfoAnimation() {
-        System.out.println("Controller: performInfoAnimation called.");
-        // Start the zoom-in animation, providing the specific callback
-        // to transition to InfoDisplayState when the zoom completes.
+        // fa partire zoom in
         performInfoZoomInAnimation(() -> {
-            // This lambda is the onZoomComplete callback
-            System.out.println("Callback: Setting state to InfoDisplayState.");
-            this.setStates(new InfoDisplayState()); // Transition state AFTER zoom finishes
+            // Runnabel
+            this.setStates(new InfoDisplayState());
         });
-        // Display text info immediately while animation runs
+        
         view.showInfo("Enemy Info:\nName: " + model.getEnemyName() + "\nPower: " + model.getEnemyPower());
     }
 
+    /**
+     * 
+     * @return true se qualcuno è morto false se no
+     */
     public boolean checkGameOver() {
         if (model.isGameOver()) {
-            stopAnimationTimer(); // Stop any ongoing animations
-            view.setButtonsEnabled(false); // Disable all buttons
+            stopAnimationTimer(); 
+            view.setButtonsEnabled(false);
             String winner = model.getPlayerHealth() <= 0 ? "Enemy" : "Player";
             view.showInfo("Game Over! " + winner + " wins!");
             return true;
@@ -515,6 +581,11 @@ public class CombatController {
         return false;
     }
 
+    /**
+     * 
+     * @param death posizione di chi è morto
+     * @param onComplete funzione da fare andare dopo
+     */
     public void performDeathAnimation(Position death, Runnable onComplete){
         view.redrawGrid(model.getPlayerPosition(), model.getEnemyPosition(), death, 
         true, true, false, false, false, new Position(0, 0), 0, 1, 2, true, death);
@@ -523,19 +594,25 @@ public class CombatController {
         }
     }
 
+    /**
+     * cosa succede e premi borsa
+     */
     public void handleBagPressed(){
         this.setStates(new ItemSelectionState());
         this.view.showBagButtons();
         view.clearInfo();
-        // Stop any ongoing animations if necessary
         stopAnimationTimer();
     }
 
+    /**
+     * 
+     * @param potion Pozione
+     */
     public void handleAttackBuffPressed(Potion potion){
         this.currentState.handlePotionUsed(this, potion);
     }
 
-    // GETTER METHODS
+    // GETTER
 
     public CombatModel getModel(){
         return this.model;
@@ -557,7 +634,7 @@ public class CombatController {
         return this.STAMINA_COST;
     }
 
-    // SETTER METHODS
+    // SETTER 
 
     public void setStates(CombatState newState){
         this.currentState.exitState(this);

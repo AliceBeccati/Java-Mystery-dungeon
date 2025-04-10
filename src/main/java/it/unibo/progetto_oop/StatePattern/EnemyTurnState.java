@@ -32,43 +32,36 @@ public class EnemyTurnState implements CombatState{
 
     @Override
     public void handleInfoInput(CombatController context) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleInfoInput'");
     }
 
     @Override
     public void handleBackInput(CombatController context) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleBackInput'");
     }
 
     @Override
     public void handleBagInput(CombatController context) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleBagInput'");
     }
 
     @Override
     public void handleRunInput(CombatController context) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleRunInput'");
     }
 
     @Override
     public void handleAnimationComplete(CombatController context) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleAnimationComplete'");
     }
 
     @Override
     public void handleTimerExpired(CombatController context) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handleTimerExpired'");
     }
 
     @Override
     public void handlePotionUsed(CombatController context, Potion selectedPotion) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handlePotionUsed'");
     }
 }

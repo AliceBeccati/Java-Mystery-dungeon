@@ -236,20 +236,34 @@ public class CombatView extends JFrame {
 
 
 
-    // --- Redraw Logic ---
+    // --- Redraw Logica ---
+    /**
+     * 
+     * @param player Posizione giocatore
+     * @param enemy Poszione nemico
+     * @param flame Posizione di fiamma
+     * @param drawPlayer vero se vogliamo disegnare giocatore falso se no
+     * @param drawEnemy vero se vogliamo disegnare nemico false se no
+     * @param drawFlame vero se vogliamo fiamma false se no
+     * @param drawPoison Vero se vogliamo veleno e non raggio normale false se no
+     * @param drawPoisDamage Vero se vogliamo animazione di veleno
+     * @param poisonedPlayer Posizione vgiocatore avvelenato
+     * @param heightPois altezza (int) di posizione dia nimazione veleno
+     * @param playerRange qaunto vogliamo che sia vicino per essere considerato vicino
+     * @param enemyRange  qaunto vogliamo che sia vicino per essere considerato vicino
+     * @param isGameOver vero se è qualcuno è morto false se no
+     * @param whoDied posizione di chi è morto
+     */
     public void redrawGrid(Position player, Position enemy, Position flame,
     boolean drawPlayer, boolean drawEnemy,
     boolean drawFlame, boolean drawPoison, boolean drawPoisDamage, Position poisonedPlayer, int heightPois, int playerRange, int enemyRange,
     boolean isGameOver, Position whoDied)
     {
-    // Need MeleeButton only for neighbour check - this couples View to Command logic, which isn't ideal MVC.
-    // A better approach might be to pass a Set<Position> for player/enemy area of effect.
-    // For now, we keep the dependency for simplicity.
     
     for (var entry : cells.entrySet()) {
             JLabel cellLabel = entry.getKey();
             Position cellPos = entry.getValue();
-            Icon icon = null; // Determine the icon
+            Icon icon = null;
 
             if (isGameOver){
                 if (redrawHelper.deathNeighbours(whoDied, cellPos, enemyRange)){
@@ -271,15 +285,13 @@ public class CombatView extends JFrame {
                 } else if (drawEnemy && redrawHelper.neighbours(enemy, cellPos, enemyRange)) {
                     icon = getIconResource("/red.jpg");
                 } else {
-                    icon = getIconResource("/white.jpg"); // Default background
+                    icon = getIconResource("/white.jpg");
                 }
             }
     
             cellLabel.setIcon(icon);
         }
-         // Ensure the UI updates immediately
-        // gridPanel.revalidate(); // Might be needed if gridPanel reference was kept
-        // gridPanel.repaint();
+
         this.revalidate();
         this.repaint();
     }
@@ -290,12 +302,11 @@ public class CombatView extends JFrame {
             return new ImageIcon(imgURL);
         } else {
             System.err.println("Couldn't find file: " + path);
-            // Return a default small colored square or null
             return createDefaultIcon();
         }
     }
 
-    // Helper to create a default icon if resource loading fails
+    // Helper per creare un'icona base in caso ci siano errori
     private ImageIcon createDefaultIcon() {
         BufferedImage image = new BufferedImage(20, 20, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
@@ -306,13 +317,12 @@ public class CombatView extends JFrame {
     }
 
     public void updatePlayerStamina(int value, int max) {
-        playerStaminaBar.setMaximum(max); // Update max just in case
+        playerStaminaBar.setMaximum(max); // Aggiorno massimo in caso
         playerStaminaBar.setValue(value);
         playerStaminaBar.setString("Stamina: " + value + "/" + max);
     }
 
-    // --- Add Action Listeners (forwarding to Controller) ---
-    // Use ActionListener functional interface for brevity
+    // --- Aggiungere gli ActionListener ---
     public void addAttackButtonListener(ActionListener listener) {
         attackButton.addActionListener(listener);
     }

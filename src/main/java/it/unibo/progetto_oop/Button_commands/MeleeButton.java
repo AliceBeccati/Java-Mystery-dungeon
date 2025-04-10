@@ -12,6 +12,14 @@ public class MeleeButton implements GameButton{
     int where;
     int distance;
 
+    /**
+     * 
+     * @param player Posizione del giocatore
+     * @param enemy Posizione del nemico
+     * @param where direzione in cui deve andare andare l'attaccante giocatore o nemico
+     * @param distance la distanza necessaria perché valga come vicino al nemico di solito 1 perché adiacente
+     */
+
     public void setAttributes(Position player, Position enemy, int where, int distance){
         this.player = player;
         this.enemy = enemy;
@@ -20,10 +28,12 @@ public class MeleeButton implements GameButton{
 
     }
 
+    /**
+     * @return Lista "giocatori" con nuova posizione di nemico e giocatore usato per disegnare
+     */
+
     @Override
     public List<Position> execute(){
-
-        System.out.println( "PER NEIGHBOURS => " + (this.player.x() + this.where) + "\n" + this.distance);
 
         if (this.neighbours(new Position(this.player.x() + this.where, this.player.y()), this.enemy , 1)){
 
@@ -41,6 +51,11 @@ public class MeleeButton implements GameButton{
         return this.giocatori;
     }
 
+    /**
+     * @return Lista "giocatori" con nuova posizione di nemico e giocatore usato per disegnare
+     * Usato per spostare sia giocatore che nemico per esempio quando fanno contatto
+     */
+
     public List<Position> moveEnemy(){
         
         this.enemy = new Position(this.enemy.x() + this.where, this.enemy.y());
@@ -53,9 +68,36 @@ public class MeleeButton implements GameButton{
         return this.giocatori;
     }
 
+    /**
+     * 
+     * @param player Posizione del giocatore
+     * @param other Posizione del nemico
+     * @param distance Distanza a cui viene considerato adiacente
+     * @return true se adiacente false se non adiacente  
+     */
+
     public boolean neighbours(Position player, Position other, int distance) {
         return Math.abs(player.x() - other.x()) <= distance && Math.abs(player.y() - other.y()) <= distance;
     }
+
+    /**
+     * 
+     * @param player Posizione del giocatore
+     * @param other Posizione del nemico
+     * @param distance Distanza a cui viene considerato adiacente
+     * @return true se i controlli valgono se no false
+     * 
+     * Usato per l'animaizone della morte, sono disegnati quadrati sono le adiacenti con un blocco vuoto tra il blocco colorato e quello centrale
+     * es.
+     * °°°
+     * °°° nemico non morto
+     * °°°
+     * 
+     * ° ° °
+     * ° ° ° nemico morto (aumentata la distanza)
+     * ° ° °
+     * 
+     */
 
     public boolean deathNeighbours(Position player, Position other, int distance){
         return 

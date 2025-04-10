@@ -4,6 +4,9 @@ import it.unibo.progetto_oop.google.CombatModel;
 
 public class CurePoison implements PotionEffectStrategy{
 
+    /**
+     * @param user Istanza di CombatModel per dire se giocatore è avvelenato o no
+     */
     @Override
     public void apllyEffect(CombatModel user) {
         user.setPlayerPoisoned(false);

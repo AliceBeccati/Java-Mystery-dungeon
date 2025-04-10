@@ -10,24 +10,24 @@ public class CombatModel {
     private int size;
     private Position playerPosition;
     private Position enemyPosition;
-    private Position flamePosition; // For long-range attack animation
-    private Position deadPlayer;
+    private Position flamePosition;
 
     private int playerHealth;
     private int enemyHealth;
     private int playerStamina;
-    private final int maxStamina = 100; // Or your desired max
-    private final int maxHealth = 100; // Assuming max health is 100
+    private final int maxStamina = 100;
+    private final int maxHealth = 100;
 
     private int playerPower;
     private int playerPoisonPower;
     private int enemyPower;
-    private int enemySpeed; // If needed for future logic
-    private String enemyName; // If needed
+    private int enemySpeed;
+    private String enemyName;
 
     private boolean enemyPoisoned;
     private boolean playerPoisoned = false;
-    private boolean isPlayerTurn = true; // Added to manage turns
+    private boolean isPlayerTurn = true;
+    private Position deadPlayer;
 
     public CombatModel(int size, int playerPower, int playerPoisonPower, int enemyPower, int enemySpeed, String enemyName) {
         this.size = size;
@@ -39,18 +39,15 @@ public class CombatModel {
 
         this.playerStamina = maxStamina;
 
-        // Initialize health
         this.playerHealth = 100;
         this.enemyHealth = 100;
 
-        // Initialize positions
         resetPositions();
-        this.flamePosition = this.playerPosition; // Initial flame position
+        this.flamePosition = this.playerPosition; 
         this.enemyPoisoned = false;
     }
 
     public void resetPositions() {
-        // Same logic as original Player() method
         this.playerPosition = new Position((this.size / 3) - 2, (this.size / 2));
         this.enemyPosition = new Position(this.size - ((this.size / 3) - 1), (this.size / 2));
     }
@@ -182,6 +179,6 @@ public class CombatModel {
     }
 
     public void decreasePlayerStamina(int amount) {
-        this.playerStamina = Math.max(0, this.playerStamina - amount); // Prevent going below 0
+        this.playerStamina = Math.max(0, this.playerStamina - amount);
     }
 }

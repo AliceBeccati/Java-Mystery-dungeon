@@ -41,7 +41,6 @@ public class GameOverState implements CombatState{
 
     @Override
     public void handlePotionUsed(CombatController context, Potion selectedPotion) {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'handlePotionUsed'");
     }
 }
