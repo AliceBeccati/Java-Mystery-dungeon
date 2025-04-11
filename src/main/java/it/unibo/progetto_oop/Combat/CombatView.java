@@ -1,4 +1,4 @@
-package it.unibo.progetto_oop.google;
+package it.unibo.progetto_oop.Combat;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;

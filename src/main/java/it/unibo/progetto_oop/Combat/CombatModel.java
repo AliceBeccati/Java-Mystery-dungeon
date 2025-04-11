@@ -1,4 +1,4 @@
-package it.unibo.progetto_oop.google;
+package it.unibo.progetto_oop.Combat;
 
 import java.util.Objects;
 import it.unibo.progetto_oop.combattimento.Position;

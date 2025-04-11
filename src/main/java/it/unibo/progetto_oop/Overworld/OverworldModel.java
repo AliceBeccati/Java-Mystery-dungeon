@@ -28,7 +28,6 @@ public class OverworldModel {
      * @return vero se la prossima posizione è vicina ad qualcosa falso altrimenti
      */
     private boolean attemptMovement(int directionx, int directiony, List<Position> lista){
-
         this.tempPlayer = new Position(this.player.x() + directionx, this.player.y() + directiony);
         return lista.stream().anyMatch(pos -> pos.equals(tempPlayer)) ? true : false;
     }
@@ -52,6 +51,11 @@ public class OverworldModel {
     public Position setPlayer(int directionx, int directiony){
         if (!attemptMovement(directionx, directiony, this.walls)){
             this.player = this.tempPlayer;
+        }
+        if (attemptMovement(0, 0, this.enemies)){
+            System.out.println("Da implementare Transizione a attacco");
+            this.enemies = this.removeEnemy(this.player);
+            System.out.println("Nemici nuovo => " + this.enemies);
         }
         return this.player;
     }
