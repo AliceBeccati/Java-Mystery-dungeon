@@ -1,6 +1,6 @@
 package it.unibo.progetto_oop.EnemyStrategyPattern;
 
-import it.unibo.progetto_oop.google.CombatController;
+import it.unibo.progetto_oop.Combat.CombatController;
 
 public interface EnemyAttackStrategy {
     /**

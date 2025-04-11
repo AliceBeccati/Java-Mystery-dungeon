@@ -1,6 +1,6 @@
 package it.unibo.progetto_oop.PotionStrategy;
 
-import it.unibo.progetto_oop.google.CombatModel;
+import it.unibo.progetto_oop.Combat.CombatModel;
 
 public class Healing implements PotionEffectStrategy{
 

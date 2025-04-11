@@ -3,6 +3,10 @@ package it.unibo.progetto_oop.google;
 
 import javax.swing.SwingUtilities;
 
+import it.unibo.progetto_oop.Combat.CombatController;
+import it.unibo.progetto_oop.Combat.CombatModel;
+import it.unibo.progetto_oop.Combat.CombatView;
+
 public class TestGUI {
 
     public static void main(String[] args) {

@@ -1,10 +1,10 @@
 package it.unibo.progetto_oop.StatePattern;
 
+import it.unibo.progetto_oop.Combat.CombatController;
+import it.unibo.progetto_oop.Combat.CombatModel;
+import it.unibo.progetto_oop.Combat.CombatView;
 import it.unibo.progetto_oop.PotionStrategy.Potion;
 import it.unibo.progetto_oop.combattimento.Position;
-import it.unibo.progetto_oop.google.CombatController;
-import it.unibo.progetto_oop.google.CombatModel;
-import it.unibo.progetto_oop.google.CombatView;
 
 public class AnimatingState implements CombatState{
     Position centerOfDying;

@@ -2,8 +2,8 @@ package it.unibo.progetto_oop.StatePattern;
 
 import java.awt.Component;
 
+import it.unibo.progetto_oop.Combat.CombatController;
 import it.unibo.progetto_oop.PotionStrategy.Potion;
-import it.unibo.progetto_oop.google.CombatController;
 
 public class InfoDisplayState implements CombatState{
 

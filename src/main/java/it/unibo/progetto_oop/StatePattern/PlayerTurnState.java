@@ -1,7 +1,7 @@
 package it.unibo.progetto_oop.StatePattern; // Or your appropriate package
 
+import it.unibo.progetto_oop.Combat.CombatController;
 import it.unibo.progetto_oop.PotionStrategy.Potion;
-import it.unibo.progetto_oop.google.CombatController;
 
 public class PlayerTurnState implements CombatState { // Must implement the interface
 
