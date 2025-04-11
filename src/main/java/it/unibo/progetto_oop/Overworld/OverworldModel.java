@@ -34,20 +34,38 @@ public class OverworldModel {
 
     // --- getter methods ---
 
+    /**
+     * 
+     * @return Posizione del giocatore
+     */
     public Position getPlayer(){
         return this.player;
     }
 
+    /**
+     * 
+     * @return Lista dei nemici sulla mappa
+     */
     public List<Position> getEnemies(){
         return this.enemies;
     }
 
+    /**
+     * 
+     * @return lista dei muri
+     */
     public List<Position> getWalls(){
         return this.walls;
     }
 
     // --- setter methods ---
 
+    /**
+     * Usato per aggiornare la posizione del giocatore
+     * @param directionx direzione nell'asse x in cui si sposta il giocatore
+     * @param directiony direzione nell'asse y in cui si sposta il giocatore
+     * @return la nouva o stessa posizione del giocatore
+     */
     public Position setPlayer(int directionx, int directiony){
         if (!attemptMovement(directionx, directiony, this.walls)){
             this.player = this.tempPlayer;
@@ -60,6 +78,11 @@ public class OverworldModel {
         return this.player;
     }
 
+    /**
+     * Rimuove il nemico sopra il quale si è passato
+     * @param posToRemove la posizione del nemico da cavare
+     * @return la lista di nemici aggiornata
+     */
     public List<Position> removeEnemy(Position posToRemove){
         int originalSize = this.enemies.size();
 

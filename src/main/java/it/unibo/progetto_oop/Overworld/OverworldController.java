@@ -9,7 +9,7 @@ import java.util.Objects;
 public class OverworldController {
 
     private final OverworldModel model;
-    private final OverworldView view; // The controller needs the view to attach listeners/bindings
+    private final OverworldView view; 
 
     public OverworldController(OverworldModel model, OverworldView view) {
         this.model = Objects.requireNonNull(model, "Model cannot be null");
@@ -17,20 +17,21 @@ public class OverworldController {
     }
 
     /**
-     * Configures Key Bindings for player movement on the associated View component.
+     * Inizializzazione funzioni necessarie per muovere il giocatore usando la tastiera
      */
     public void initializeInputBindings() {
-        // Get the InputMap and ActionMap FROM THE VIEW component
+
+// ************************************************************************************************************************************
+// Per usare getInputMap che serve qui Serve che la view estenda JPanel in questo modo funzionerà correttamente il codice
+// ************************************************************************************************************************************
         InputMap inputMap = view.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = view.getActionMap();
 
-        // Define Action Keys (using constants might be even better)
         final String MOVE_UP = "moveUp";
         final String MOVE_DOWN = "moveDown";
         final String MOVE_LEFT = "moveLeft";
         final String MOVE_RIGHT = "moveRight";
 
-        // --- Map KeyStrokes to Action Keys ---
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), MOVE_UP);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, 0), MOVE_UP);
 
@@ -43,16 +44,12 @@ public class OverworldController {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), MOVE_RIGHT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), MOVE_RIGHT);
 
-        // --- Map Action Keys to Actions (AbstractAction) ---
-        // The Actions now live inside the Controller (or are defined here)
-        // They access the model and view via the Controller's fields
-
         actionMap.put(MOVE_UP, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Controller: Action Move Up"); // Debug
-                model.setPlayer(0, -1); // Use model reference from Controller
-                view.repaint();                 // Use view reference from Controller
+                System.out.println("Controller: Action Move Up");
+                model.setPlayer(0, -1); 
+                view.repaint();
             }
         });
 
@@ -83,9 +80,6 @@ public class OverworldController {
             }
         });
 
-        System.out.println("Input bindings initialized by Controller."); // Debug
+        System.out.println("Input bindings initialized by Controller.");
     }
-
-    // You could add other controller methods here if needed,
-    // e.g., methods to handle button clicks if you add GUI buttons.
 }

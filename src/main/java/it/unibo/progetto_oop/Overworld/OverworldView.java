@@ -1,124 +1,145 @@
 package it.unibo.progetto_oop.Overworld; // Adjust package as needed
 
 import javax.swing.*;
+
+import it.unibo.progetto_oop.combattimento.Position;
+
 import java.awt.*;
 import java.util.List;
 import java.util.Objects;
 
-// Assuming Position exists in the correct package
-import it.unibo.progetto_oop.combattimento.Position;
+// import it.unibo.progetto_oop.combattimento.Position;
 
 public class OverworldView extends JPanel {
 
     private final OverworldModel model;
 
-    // --- Constants for Drawing ---
-    private static final int CELL_SIZE = 20; // Size of each tile in pixels
-    // Define how many cells are visible around the player (e.g., 9x9 viewport)
-    private static final int VIEWPORT_WIDTH_CELLS = 15; // Example: 15 cells wide
-    private static final int VIEWPORT_HEIGHT_CELLS = 11; // Example: 11 cells high
+    // --- Fixed Viewport Dimensions ---
+    private static final int VIEWPORT_WIDTH_CELLS = 13; // Always show 13 cells horizontally
+    private static final int VIEWPORT_HEIGHT_CELLS = 13; // Always show 13 cells vertically
 
-    // --- Colors (or use ImageIcons later) ---
+    // --- Colors (Keep these) ---
     private static final Color FLOOR_COLOR = Color.LIGHT_GRAY;
     private static final Color WALL_COLOR = Color.DARK_GRAY;
     private static final Color PLAYER_COLOR = Color.RED;
     private static final Color ENEMY_COLOR = Color.ORANGE;
+    private static final Color GRID_COLOR = Color.GRAY;
+    // No BACKGROUND_COLOR needed for letterboxing now
+
     /**
-     * Constructor for the OverworldView.
-     * @param model The game model containing the state to display.
+     * Constructor (remains the same as before)
      */
     public OverworldView(OverworldModel model) {
         this.model = Objects.requireNonNull(model, "Model cannot be null");
-
-        // Set the preferred size of this panel based on the viewport dimensions
-        int preferredWidth = VIEWPORT_WIDTH_CELLS * CELL_SIZE;
-        int preferredHeight = VIEWPORT_HEIGHT_CELLS * CELL_SIZE;
-        setPreferredSize(new Dimension(preferredWidth, preferredHeight));
-
-        // Set a default background (optional, often overridden by floor tiles)
-        setBackground(FLOOR_COLOR);
-
-        // Important for receiving keyboard events if using KeyListener
-        // (Less critical but still good practice when using Key Bindings)
+        int initialDefaultCellSize = 25;
+        setPreferredSize(new Dimension(
+                VIEWPORT_WIDTH_CELLS * initialDefaultCellSize,
+                VIEWPORT_HEIGHT_CELLS * initialDefaultCellSize
+        ));
+        setMinimumSize(new Dimension(VIEWPORT_WIDTH_CELLS * 5, VIEWPORT_HEIGHT_CELLS * 5));
         setFocusable(true);
+        // Optional: Set default background, but paintComponent will cover it
+        setBackground(FLOOR_COLOR);
     }
 
     /**
-     * The core drawing method, called by Swing when the component needs painting.
-     * This method is invoked automatically when repaint() is called.
-     *
+     * The core drawing method, scales a fixed 13x13 grid to STRETCH and fill the panel.
      * @param g The Graphics object provided by Swing for drawing.
      */
     @Override
     protected void paintComponent(Graphics g) {
-        // Always call the superclass method first for proper component painting
+        // 1. Call superclass method (important!)
         super.paintComponent(g);
 
-        // Get current game state from the model
+        // 2. Get current panel dimensions
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+
+        // Prevent errors if panel is invisible or too small
+        if (panelWidth <= 0 || panelHeight <= 0) {
+            return;
+        }
+
+        // 3. Calculate the dynamic cell width and height INDEPENDENTLY
+        // This allows stretching to fill the panel exactly.
+        float cellSizeX = (float) panelWidth / VIEWPORT_WIDTH_CELLS;
+        float cellSizeY = (float) panelHeight / VIEWPORT_HEIGHT_CELLS;
+
+        // 4. No need for background fill or offsets, the grid fills everything
+
+
+        // --- Get current game state ---
         Position playerPos = model.getPlayer();
         List<Position> walls = model.getWalls();
-        List<Position> enemies = model.getEnemies(); // Assuming getEnemies exists
+        List<Position> enemies = model.getEnemies();
+
 
         // --- Viewport Calculation (Center on Player) ---
-        // Determine the top-left corner (in model coordinates) of the area to draw
+        // Determines which part of the *model* grid is the top-left corner
         int viewPortTopLeftX = playerPos.x() - VIEWPORT_WIDTH_CELLS / 2;
         int viewPortTopLeftY = playerPos.y() - VIEWPORT_HEIGHT_CELLS / 2;
 
-        // --- Drawing Loop ---
-        // Iterate through the cells that should be visible in the viewport
+
+        // --- Drawing Loop (Iterate over the FIXED 13x13 viewport cells) ---
         for (int viewY = 0; viewY < VIEWPORT_HEIGHT_CELLS; viewY++) {
             for (int viewX = 0; viewX < VIEWPORT_WIDTH_CELLS; viewX++) {
 
-                // Calculate the corresponding model coordinates for this viewport cell
+                // Corresponding model coordinates for this viewport cell
                 int modelX = viewPortTopLeftX + viewX;
                 int modelY = viewPortTopLeftY + viewY;
 
-                // Calculate the screen coordinates where this cell should be drawn
-                int screenX = viewX * CELL_SIZE;
-                int screenY = viewY * CELL_SIZE;
+                // Calculate the screen coordinates using the dynamic cell widths/heights
+                // No offsets needed as we fill the whole panel
+                int screenX = Math.round(viewX * cellSizeX);
+                int screenY = Math.round(viewY * cellSizeY);
+
+                // Calculate the precise width/height for *this specific cell*
+                // Handles potential rounding differences for the last cell in row/column
+                int currentCellDrawWidth = Math.round((viewX + 1) * cellSizeX) - screenX;
+                int currentCellDrawHeight = Math.round((viewY + 1) * cellSizeY) - screenY;
+                // Ensure minimum size
+                currentCellDrawWidth = Math.max(1, currentCellDrawWidth);
+                currentCellDrawHeight = Math.max(1, currentCellDrawHeight);
+
 
                 // --- Determine what to draw in this cell ---
 
-                // 1. Draw Floor (Default)
+                // 1. Draw Floor background for this cell
                 g.setColor(FLOOR_COLOR);
-                g.fillRect(screenX, screenY, CELL_SIZE, CELL_SIZE);
+                // Use calculated width/height for this specific cell
+                g.fillRect(screenX, screenY, currentCellDrawWidth, currentCellDrawHeight);
 
-                // 2. Check for Walls (using simple iteration - could optimize with Set/Map later)
-                //    (Alternatively, if model has a getTile(x,y) method, use that)
+                // 2. Draw Walls
                 boolean isWall = false;
                 for (Position wall : walls) {
                     if (wall.x() == modelX && wall.y() == modelY) {
                         g.setColor(WALL_COLOR);
-                        g.fillRect(screenX, screenY, CELL_SIZE, CELL_SIZE);
+                        g.fillRect(screenX, screenY, currentCellDrawWidth, currentCellDrawHeight);
                         isWall = true;
-                        break; // Found wall, no need to check further for this cell
+                        break;
                     }
                 }
-                if (isWall) continue; // Skip drawing other things if it's a wall
+                // if (isWall) continue; // Optional
 
-                for (Position enemy : enemies) {
-                     if (enemy.x() == modelX && enemy.y() == modelY) {
+                // 3. Draw Enemies
+                 for (Position enemy : enemies) {
+                     if (enemy.x() == modelX && enemy.y() == modelY && !isWall) {
                          g.setColor(ENEMY_COLOR);
-                         g.fillRect(screenX, screenY, CELL_SIZE, CELL_SIZE);
+                         g.fillRect(screenX, screenY, currentCellDrawWidth, currentCellDrawHeight);
                      }
                  }
-                 // If drawing enemies on top of floor, don't continue here
 
-                // 4. Check for Player (Draw last to be on top)
-                if (playerPos.x() == modelX && playerPos.y() == modelY) {
+                // 4. Draw Player
+                if (playerPos.x() == modelX && playerPos.y() == modelY && !isWall) {
                     g.setColor(PLAYER_COLOR);
-                    g.fillRect(screenX, screenY, CELL_SIZE, CELL_SIZE);
+                    g.fillRect(screenX, screenY, currentCellDrawWidth, currentCellDrawHeight);
                 }
 
-                // 5. Optional: Draw Grid Lines
-                // g.setColor(GRID_COLOR);
-                // g.drawRect(screenX, screenY, CELL_SIZE, CELL_SIZE);
+                // 5. Draw Grid Line for this cell
+                g.setColor(GRID_COLOR);
+                // Use calculated width/height for this specific cell
+                g.drawRect(screenX, screenY, currentCellDrawWidth, currentCellDrawHeight);
             }
         }
-        // Optional: Draw UI elements, player stats, etc. over the game world
     }
-
-    // NOTE: Methods like getInputMap(), getActionMap(), and repaint() are
-    // inherited from JComponent/Component and are called by the Controller.
-    // You DO NOT typically need to write them here.
 }

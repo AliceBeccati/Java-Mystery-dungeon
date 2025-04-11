@@ -12,3 +12,6 @@ bin/
 .project
 .settings/
 .classpath
+src/main/java/it/unibo/progetto_oop/Overworld/OverworldView.java
+src/main/java/it/unibo/progetto_oop/Overworld/MysteryDungeonPlayer.java
+src/main/java/it/unibo/progetto_oop/Overworld/GameApplication.java
