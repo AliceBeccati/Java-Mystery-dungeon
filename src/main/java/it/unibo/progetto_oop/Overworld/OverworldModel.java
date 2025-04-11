@@ -7,7 +7,6 @@ import it.unibo.progetto_oop.combattimento.Position;
 public class OverworldModel {
     
     private Position player;
-    private Position tempPlayer;
     private List<Position> enemies;
     private List<Position> walls; 
 
@@ -17,10 +16,10 @@ public class OverworldModel {
         this.walls = walls;
     }
 
-    private Position setPlayerAttempt(int directionx, int directiony){
+    private Position attemptMovement(int directionx, int directiony){
 
-        this.tempPlayer = new Position(this.player.x() + directionx, this.player.y() + directiony);
-        return this.walls.stream().anyMatch(pos -> pos.equals(new Position(pos.x() + directionx, pos.y() + directiony))) ? this.player : this.tempPlayer;
+        final Position tempPlayer = new Position(this.player.x() + directionx, this.player.y() + directiony);
+        return this.walls.stream().anyMatch(pos -> pos.equals(tempPlayer)) ? this.player : tempPlayer;
     }
 
 
@@ -37,7 +36,7 @@ public class OverworldModel {
     // --- setter methods ---
 
     public Position setPlayer(int directionx, int directiony){
-        this.player = setPlayerAttempt(directionx, directiony);
+        this.player = attemptMovement(directionx, directiony);
         return this.player;
     }
 
